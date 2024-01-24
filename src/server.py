@@ -138,7 +138,7 @@ async def get():
 async def websocket_endpoint(websocket: WebSocket):
     await websocket_manager.connect(websocket)
     try:
-        while True:
+        while data_processor.is_collecting:
             data = await websocket.receive_text()
             print("hi")
 
