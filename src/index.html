@@ -10,6 +10,34 @@
             /* Limit the height of the scrollable area */
         }
     </style>
+
+    <div>
+        <button id="startButton">Start Data Collection</button>
+        <button id="stopButton">Stop Data Collection</button>
+        <input type="text" id="fileName" placeholder="Enter file name">
+    </div>
+
+    <script>
+    document.getElementById('startButton').addEventListener('click', function() {
+        fetch('/start', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => console.log(data));
+    });
+    
+    document.getElementById('stopButton').addEventListener('click', function() {
+        const fileName = document.getElementById('fileName').value;
+        fetch('/stop', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ file_name: fileName }),
+        })
+        .then(response => response.json())
+        .then(data => console.log(data));
+    });
+    </script>
+    
 </head>
 
 <body>
@@ -56,3 +84,4 @@
 
 
 </body></html>
+

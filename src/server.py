@@ -22,8 +22,8 @@ app.add_middleware(
 with open("./src/index.html", "r") as f:
     html = f.read()
 
-
-class DataProcessor:
+"""
+##class DataProcessor:
     def __init__(self):
         self.data_buffer = []
 
@@ -43,7 +43,35 @@ class DataProcessor:
             mode="a",
             header=not os.path.exists(self.file_path),
         )
-        # print(f"DataFrame saved to {self.file_path}")
+        # print(f"DataFrame saved to {self.file_path}")##
+"""
+
+class DataProcessor:
+    def __init__(self):
+        self.data_buffer = []
+        self.is_collecting = False  # To control start/stop of data collection
+        self.file_path = ""  # Dynamic file naming
+
+    def start_collecting(self):
+        self.is_collecting = True
+        self.data_buffer = []  # Reset buffer when starting
+
+    def stop_collecting(self, file_name):
+        self.is_collecting = False
+        if file_name:
+            self.file_path = file_name
+        self.save_to_csv()
+        self.data_buffer = []  # Optionally reset buffer after saving
+
+    def add_data(self, data):
+        if self.is_collecting:
+            self.data_buffer.append(data)
+
+    def save_to_csv(self):
+        if self.file_path:  # Only save if a path is set
+            df = pd.DataFrame.from_dict(self.data_buffer)
+            df.to_csv(self.file_path, index=False)
+            print(f"Data saved to {self.file_path}")
 
 
 data_processor = DataProcessor()
@@ -87,6 +115,18 @@ class WebSocketManager:
 
 websocket_manager = WebSocketManager()
 model = load_model()
+
+
+@app.post("/start")
+async def start_collection():
+    data_processor.start_collecting()
+    return {"message": "Data collection started."}
+
+@app.post("/stop")
+async def stop_collection(file_name: str = ''):
+    data_processor.stop_collecting(file_name)
+    return {"message": f"Data collection stopped and saved to {file_name}."}
+
 
 
 @app.get("/")
