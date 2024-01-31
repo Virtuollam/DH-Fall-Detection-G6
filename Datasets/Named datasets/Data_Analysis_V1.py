@@ -1,9 +1,11 @@
+import matplotlib
+matplotlib.use('TkAgg')
 import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load the CSV files
-file_path_pickup = 'pickup_data1_20240124_110706.csv'
-file_path_walk = 'walk_data1_20240124_103004.csv'
+file_path_pickup = "pickup_data1_20240124_110706.csv"
+file_path_walk = "walk_data1_20240124_103004.csv"
 
 # Read the files
 pickup_data = pd.read_csv(file_path_pickup)
