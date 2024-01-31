@@ -1,5 +1,8 @@
-# EEN210
+# EEN210 
 
+
+
+# legacy notes from initial pull of project files
 # To run the code
 1. Run the following lines to download required packages:
     python -m venv .venv

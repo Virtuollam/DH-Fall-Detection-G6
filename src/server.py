@@ -28,6 +28,7 @@ class DataProcessor:
         self.data_buffer = []
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        #timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:19] # new time stamp to include mili sec wait probly not needed since this is just the file name
         self.file_path = f"fall_data_{timestamp}.csv"
 
     def add_data(self, data):
@@ -100,7 +101,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            print("hi")
+            # print("hi") no need to pring hi all the time i guess
 
             # Broadcast the incoming data to all connected clients
             json_data = json.loads(data)
@@ -109,7 +110,8 @@ async def websocket_endpoint(websocket: WebSocket):
             raw_data = list(json_data.values())
 
             # Add time stamp to the last received data
-            json_data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            #json_data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            json_data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:23]
 
             data_processor.add_data(json_data)
             # this line save the recent 100 samples to the CSV file. you can change 100 if you want.

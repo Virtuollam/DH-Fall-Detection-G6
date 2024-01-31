@@ -25,6 +25,9 @@ void setup()
   Serial.begin(9600);
   Wire.begin();
   mpu.initialize();
+  mpu.setFullScaleAccelRange(MPU6050_ACCEL_FS_8);
+  mpu.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
+
 
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
