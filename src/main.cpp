@@ -10,7 +10,7 @@ const char *ssid = "Testwork";
 const char *password = "password";
 
 // Replace with your WebSocket server address
-const char *webSocketServer = "192.168.253.139";
+const char *webSocketServer = "192.168.173.139";
 
 const int webSocketPort = 8000;
 const char *webSocketPath = "/";
@@ -70,6 +70,6 @@ void loop()
     client.sendTXT(payload);
     client.loop();
 
-    delay(10); // Adjust delay as needed
+    delay(50); // Adjust delay as needed
   }
 }

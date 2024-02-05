@@ -1,5 +1,5 @@
 # EEN210 
-
+When wearing the device always keep port side right and it is worn around the hips on the front of the patient.
 
 
 # legacy notes from initial pull of project files

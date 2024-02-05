@@ -115,7 +115,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             data_processor.add_data(json_data)
             # this line save the recent 100 samples to the CSV file. you can change 100 if you want.
-            if len(data_processor.data_buffer) >= 100:
+            if len(data_processor.data_buffer) >= 20: #saves more often originally 100
                 data_processor.save_to_csv()
 
             """  
