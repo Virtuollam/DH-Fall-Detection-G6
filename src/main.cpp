@@ -10,7 +10,7 @@ const char *ssid = "Testwork";
 const char *password = "password";
 
 // Replace with your WebSocket server address
-const char *webSocketServer = "192.168.173.139";
+const char *webSocketServer = "192.168.253.139";
 
 const int webSocketPort = 8000;
 const char *webSocketPath = "/";
@@ -55,6 +55,53 @@ void loop()
     int16_t gx, gy, gz;
     mpu.getAcceleration(&ax, &ay, &az);
     mpu.getRotation(&gx, &gy, &gz);
+    
+    int16_t fgr, far;
+    fgr = mpu.getFullScaleGyroRange();
+    far = mpu.getFullScaleAccelRange();
+
+
+    if (fgr == 0) {
+      gx = (250*gx)/65536;
+      gy = (250*gy)/65536;
+      gz = (250*gz)/65536;
+    }
+    else if (fgr == 1) {
+      gx = (500*gx)/65536;
+      gy = (500*gy)/65536;
+      gz = (500*gz)/65536;
+    }
+    else if (fgr == 2) {
+      gx = (1000*gx)/65536;
+      gy = (1000*gy)/65536;
+      gz = (1000*gz)/65536;
+    }
+    else if (fgr == 3) {
+      gx = (2000*gx)/65536;
+      gy = (2000*gy)/65536;
+      gz = (2000*gz)/65536;
+    }
+
+    if (far == 0) {
+      ax = (2*gx)/65536;
+      ay = (2*gy)/65536;
+      az = (2*gz)/65536;
+    }
+    else if (far == 1) {
+      ax = (4*gx)/65536;
+      ay = (4*gy)/65536;
+      az = (4*gz)/65536;
+    }
+    else if (far == 2) {
+      ax = (8*gx)/65536;
+      ay = (8*gy)/65536;
+      az = (8*gz)/65536;
+    }
+    else if (far == 3) {
+      ax = (16*gx)/65536;
+      ay = (16*gy)/65536;
+      az = (16*gz)/65536;
+    }
 
     // Convert data to a JSON string
     String payload = "{\"acceleration_x\":" + String(ax) +
@@ -70,6 +117,6 @@ void loop()
     client.sendTXT(payload);
     client.loop();
 
-    delay(50); // Adjust delay as needed
+    delay(10); // Adjust delay as needed
   }
 }
