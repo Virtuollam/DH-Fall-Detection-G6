@@ -10,7 +10,7 @@ const char *ssid = "Testwork";
 const char *password = "password";
 
 // Replace with your WebSocket server address
-const char *webSocketServer = "192.168.253.139";
+const char *webSocketServer = "192.168.173.139";
 
 const int webSocketPort = 8000;
 const char *webSocketPath = "/";
@@ -83,24 +83,24 @@ void loop()
     }
 
     if (far == 0) {
-      ax = (2*gx)/65536;
-      ay = (2*gy)/65536;
-      az = (2*gz)/65536;
+      ax = (2*ax)/65536;
+      ay = (2*ay)/65536;
+      az = (2*az)/65536;
     }
     else if (far == 1) {
-      ax = (4*gx)/65536;
-      ay = (4*gy)/65536;
-      az = (4*gz)/65536;
+      ax = (4*ax)/65536;
+      ay = (4*ay)/65536;
+      az = (4*az)/65536;
     }
     else if (far == 2) {
-      ax = (8*gx)/65536;
-      ay = (8*gy)/65536;
-      az = (8*gz)/65536;
+      ax = (8*ax)/65536;
+      ay = (8*ay)/65536;
+      az = (8*az)/65536;
     }
     else if (far == 3) {
-      ax = (16*gx)/65536;
-      ay = (16*gy)/65536;
-      az = (16*gz)/65536;
+      ax = (16*ax)/65536;
+      ay = (16*ay)/65536;
+      az = (16*az)/65536;
     }
 
     // Convert data to a JSON string
