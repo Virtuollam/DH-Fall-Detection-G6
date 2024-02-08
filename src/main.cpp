@@ -51,10 +51,15 @@ void loop()
     client.loop();
 
     // Get sensor data
-    int16_t ax, ay, az;
-    int16_t gx, gy, gz;
-    mpu.getAcceleration(&ax, &ay, &az);
-    mpu.getRotation(&gx, &gy, &gz);
+
+
+    int16_t axRaw, ayRaw, azRaw;
+    int16_t gxRaw, gyRaw, gzRaw;
+    mpu.getAcceleration(&axRaw, &ayRaw, &azRaw);
+    mpu.getRotation(&gxRaw, &gyRaw, &gzRaw);
+
+    float ax, ay, az;
+    float gx, gy, gz;
     
     int16_t fgr, far;
     fgr = mpu.getFullScaleGyroRange();
@@ -62,61 +67,61 @@ void loop()
 
 
     if (fgr == 0) {
-      gx = (250.0*gx)/65536.0;
-      gy = (250.0*gy)/65536.0;
-      gz = (250.0*gz)/65536.0;
+      gx = (500.0*gxRaw)/65536.0;
+      gy = (500.0*gyRaw)/65536.0;
+      gz = (500.0*gzRaw)/65536.0;
     }
     else if (fgr == 1) {
-      gx = (500.0*gx)/65536.0;
-      gy = (500.0*gy)/65536.0;
-      gz = (500.0*gz)/65536.0;
+      gx = (1000.0*gxRaw)/65536.0;
+      gy = (1000.0*gyRaw)/65536.0;
+      gz = (1000.0*gzRaw)/65536.0;
     }
     else if (fgr == 2) {
-      gx = (1000.0*gx)/65536.0;
-      gy = (1000.0*gy)/65536.0;
-      gz = (1000.0*gz)/65536.0;
+      gx = (2000.0*gxRaw)/65536.0;
+      gy = (2000.0*gyRaw)/65536.0;
+      gz = (2000.0*gzRaw)/65536.0;
     }
     else if (fgr == 3) {
-      gx = (2000.0*gx)/65536.0;
-      gy = (2000.0*gy)/65536.0;
-      gz = (2000.0*gz)/65536.0;
+      gx = (4000.0*gxRaw)/65536.0;
+      gy = (4000.0*gyRaw)/65536.0;
+      gz = (4000.0*gzRaw)/65536.0;
     }
 
     if (far == 0) {
-      ax = (2.0*ax)/65536.0;
-      ay = (2.0*ay)/65536.0;
-      az = (2.0*az)/65536.0;
+      ax = (4.0*axRaw)/65536.0;
+      ay = (4.0*ayRaw)/65536.0;
+      az = (4.0*azRaw)/65536.0;
     }
     else if (far == 1) {
-      ax = (4.0*ax)/65536.0;
-      ay = (4.0*ay)/65536.0;
-      az = (4.0*az)/65536.0;
+      ax = (8.0*axRaw)/65536.0;
+      ay = (8.0*ayRaw)/65536.0;
+      az = (8.0*azRaw)/65536.0;
     }
     else if (far == 2) {
-      ax = (8.0*ax)/65536.0;
-      ay = (8.0*ay)/65536.0;
-      az = (8.0*az)/65536.0;
+      ax = (16.0*axRaw)/65536.0;
+      ay = (16.0*ayRaw)/65536.0;
+      az = (16.0*azRaw)/65536.0;
     }
     else if (far == 3) {
-      ax = (16.0*ax)/65536.0;
-      ay = (16.0*ay)/65536.0;
-      az = (16.0*az)/65536.0;
+      ax = (32.0*axRaw)/65536.0;
+      ay = (32.0*ayRaw)/65536.0;
+      az = (32.0*azRaw)/65536.0;
     }
 
     // Convert data to a JSON string
-    String payload = "{\"acceleration_x\":" + String(ax) +
-                     ",\"acceleration_y\":" + String(ay) +
-                     ",\"acceleration_z\":" + String(az) +
-                     ",\"gyroscope_x\":" + String(gx) +
-                     ",\"gyroscope_y\":" + String(gy) +
-                     ",\"gyroscope_z\":" + String(gz) + "}";
+    String payload = "{\"acceleration_x\":" + String(ax,4) +
+                     ",\"acceleration_y\":" + String(ay,4) +
+                     ",\"acceleration_z\":" + String(az,4) +
+                     ",\"gyroscope_x\":" + String(gx,4) +
+                     ",\"gyroscope_y\":" + String(gy,4) +
+                     ",\"gyroscope_z\":" + String(gz,4) + "}";
 
-    Serial.println("Skiikar....");
+    Serial.println("Skiter....");
     // server address, port and URL
     // Send data via WebSocket
     client.sendTXT(payload);
     client.loop();
 
-    delay(10); // Adjust delay as needed
+    delay(50); // Adjust delay as needed
   }
 }
