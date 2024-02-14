@@ -15,6 +15,7 @@
 <body>
     <h1>Real-time data collection</h1>
     <button id="closeButton">Close Connection</button>
+    <button id="openButton">Open Connection</button>
     <ul id="messages">
     </ul>
     <script>
@@ -38,9 +39,14 @@
         };
 
         close = function () {
-            // ws.close();
+            ws.close();
             console.log("Connection Closed");
         };
+
+        open = function () {
+            ws.open();
+            console.log("Connection Open")
+        }
 
         // Add onclose event handler
         ws.onclose = function (event) {
@@ -52,6 +58,12 @@
             // Call the close function when the button is clicked
             close();
         });
+
+        var openButton = document.getElementById('openButton')
+        openButton.addEventListener('click', function () {
+            //Hopefully will call the open function which starts the onopen function?
+            open();
+        })
     </script>
 
 
