@@ -1,6 +1,12 @@
 # EEN210 
 When wearing the device always keep port side right and it is worn around the hips on the front of the patient.
 
+# Labels for datasets used in SVM
+0. Miscilanious
+1. Backpack drop
+2. Sitting up and down
+3. Walking
+4. Stairs
 
 # legacy notes from initial pull of project files
 # To run the code
