@@ -9,6 +9,9 @@ from fastapi.responses import HTMLResponse
 from fastapi import WebSocketDisconnect
 from starlette.middleware.cors import CORSMiddleware
 
+import requests
+import random
+
 app = FastAPI()
 # Enable CORS for all origins
 app.add_middleware(
@@ -96,7 +99,9 @@ async def get():
 
 
 @app.websocket("/ws")
+
 async def websocket_endpoint(websocket: WebSocket):
+    collection = 0
     await websocket_manager.connect(websocket)
     try:
         while True:
@@ -115,8 +120,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
             data_processor.add_data(json_data)
             # this line save the recent 100 samples to the CSV file. you can change 100 if you want.
-            if len(data_processor.data_buffer) >= 20: #saves more often originally 100
-                data_processor.save_to_csv()
+            #if len(data_processor.data_buffer) >= 20: #saves more often originally 100
+                #data_processor.save_to_csv()
 
             """  
             In this line we use the model to predict the labels.
@@ -125,15 +130,53 @@ async def websocket_endpoint(websocket: WebSocket):
             """
             label = predict_label(model, raw_data)
             json_data["label"] = label
-
+            collection = collection + 1
+            print(collection)
             # print the last data in the terminal
+            if collection == 100:
+                json_data["patientinfo"] = getpatientdata()
+                break
             print(json_data)
-
             # broadcast the last data to webpage
+
             await websocket_manager.broadcast_message(json.dumps(json_data))
+
 
     except WebSocketDisconnect:
         websocket_manager.disconnect(websocket)
+
+def getpatientdata():
+    sussy = requests.get('https://fhirsandbox.healthit.gov/open/r4/fhir/Patient?_format=json')
+    jsus = sussy.json()
+    patients = jsus["entry"]
+    pnr = random.randint(0,len(patients)-1)
+    patient = patients[pnr]["resource"]
+    patientid = patient["id"]
+    patientname = patient["name"][0]["given"][0] + " " + patient["name"][0]["family"]
+    patientphone = patient["telecom"][0]["value"]
+    patientadress = patient["address"][0]["line"][0] + ", " + patient["address"][0]["city"] + " " + patient["address"][0]["state"]
+    patientinfo = {"id": patientid, "name": patientname, "phonenumber": patientphone, "adress": patientadress}
+
+    condcon = requests.get('https://fhirsandbox.healthit.gov/open/r4/fhir/Condition?_format=json')
+    patientconds = condcon.json()["entry"]
+    patientcond = (item for item in patientconds if item["resource"]["subject"]["reference"] == "Patient/" + patientid)
+    conds = []
+    for item in patientcond:
+        if item["resource"]["clinicalStatus"]["coding"][0]["code"] == "active":
+            conds.append(item["resource"]["code"]["coding"][0]["display"])
+    medcon = requests.get('https://fhirsandbox.healthit.gov/open/r4/fhir/MedicationRequest?_format=json')
+    patientmeds = medcon.json()["entry"]
+    patientmed = (item for item in patientmeds if item["resource"]["subject"]["reference"] == "Patient/" + patientid)
+    meds = []
+    for item in patientmed:
+        if item["resource"]["status"] == "active":
+            if "medicationCodeableConcept" in item["resource"]:
+                meds.append(item["resource"]["medicationCodeableConcept"]["coding"][0]["display"])
+            if "medicationReference" in item["resource"]:
+                meds.append(item["resource"]["medicationReference"]["display"])
+    patientinfo["conditions"] = conds
+    patientinfo["medications"] = meds
+    return patientinfo
 
 
 if __name__ == "__main__":

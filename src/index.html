@@ -9,6 +9,10 @@
             width: 60vw;
             /* Limit the height of the scrollable area */
         }
+        #warning {
+            height: 90vh;     
+            width: 40vw
+        }
     </style>
 </head>
 
@@ -20,7 +24,7 @@
     </ul>
     <script>
         // Change Ip address based on your current wifi ip address
-        var ws = new WebSocket("ws://192.168.173.139:8000/ws");
+        var ws = new WebSocket("ws://192.168.214.4:8000/ws");
         ws.onopen = function (event) {
             console.log("WebSocket state:", ws.readyState);  // This will log "OPEN"
         };
@@ -44,7 +48,7 @@
         };
 
         open = function () {
-            ws = new WebSocket("ws://192.168.173.139:8000/ws");;
+            ws = new WebSocket("ws://192.168.214.4:8000/ws");;
             console.log("WebSocket state:", ws.readyState);
         }
 
