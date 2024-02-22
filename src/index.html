@@ -44,8 +44,8 @@
         };
 
         open = function () {
-            var ws = new WebSocket("ws://192.168.173.139:8000/ws");;
-            console.log("Connection Open")
+            ws = new WebSocket("ws://192.168.173.139:8000/ws");;
+            console.log("WebSocket state:", ws.readyState);
         }
 
         // Add onclose event handler
