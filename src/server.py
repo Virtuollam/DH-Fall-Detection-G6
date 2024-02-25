@@ -12,6 +12,10 @@ from starlette.middleware.cors import CORSMiddleware
 import requests
 import random
 
+from tensorflow.keras.models import load_model
+import pickle
+import numpy as np
+
 app = FastAPI()
 # Enable CORS for all origins
 app.add_middleware(
@@ -53,18 +57,33 @@ class DataProcessor:
 data_processor = DataProcessor()
 
 
-def load_model():
-    # you should modify this function to return your model
-    model = None
-    return model
+def load_model_LSTM():
+    # Load the trained LSTM model
+    model = load_model('Model detection/my_model.keras')
+    # Load the scaler
+    with open('Model detection/scaler.pkl', 'rb') as f:
+        scaler = pickle.load(f)
+    # Load the encoder
+    with open('Model detection/encoder.pkl', 'rb') as f:
+        encoder = pickle.load(f)
+    return model, scaler, encoder
 
 
-def predict_label(model=None, data=None):
-    # you should modify this to return the label
-    if model is not None:
-        label = model(data)
-        return label
-    return 0
+
+def predict_label(model, scaler, encoder, data):
+
+    #features = {key: data[key] for key in data.keys() - {'timestamp', 'label'}} #maybe fix for error
+
+    df = pd.DataFrame([data])
+    # Preprocess data
+    scaled_data = scaler.transform(df)
+    reshaped_data = np.reshape(scaled_data, (1, 1, scaled_data.shape[1]))  # Reshape for LSTM input
+    # Predict
+    prediction = model.predict(reshaped_data)
+    predicted_label_index = np.argmax(prediction, axis=1)
+    # Decode prediction
+    predicted_label = encoder.inverse_transform(predicted_label_index)
+    return predicted_label[0]  # Return the label 
 
 
 class WebSocketManager:
@@ -90,8 +109,8 @@ class WebSocketManager:
 
 
 websocket_manager = WebSocketManager()
-model = load_model()
 
+model, scaler, encoder = load_model_LSTM() #load model here
 
 @app.get("/")
 async def get():
@@ -106,7 +125,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            # print("hi") no need to pring hi all the time i guess
+            #print(data)
 
             # Broadcast the incoming data to all connected clients
             json_data = json.loads(data)
@@ -115,7 +134,6 @@ async def websocket_endpoint(websocket: WebSocket):
             raw_data = list(json_data.values())
 
             # Add time stamp to the last received data
-            #json_data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             json_data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:23]
 
             data_processor.add_data(json_data)
@@ -123,20 +141,21 @@ async def websocket_endpoint(websocket: WebSocket):
             #if len(data_processor.data_buffer) >= 20: #saves more often originally 100
                 #data_processor.save_to_csv()
 
-            """  
-            In this line we use the model to predict the labels.
-            Right now it only return 0.
-            You need to modify the predict_label function to return the true label
-            """
-            label = predict_label(model, raw_data)
+            label = predict_label(model, scaler, encoder, raw_data)
             json_data["label"] = label
             collection = collection + 1
-            print(collection)
+            #print(collection)
             # print the last data in the terminal
-            if collection == 100:
-                json_data["patientinfo"] = getpatientdata()
+            #if collection == 100:
+            #    json_data["patientinfo"] = getpatientdata()
+            #    break
+            #print(json_data)
+            #print(raw_data)
+            print(label)
+
+            if label == 1: #simple check to test fall detection
                 break
-            print(json_data)
+            
             # broadcast the last data to webpage
 
             await websocket_manager.broadcast_message(json.dumps(json_data))
