@@ -59,7 +59,7 @@ data_processor = DataProcessor()
 
 def load_model_LSTM():
     # Load the trained LSTM model
-    model = load_model('Model detection/my_model.keras')
+    model = load_model('Model detection/LSTM_model.keras')
     # Load the scaler
     with open('Model detection/scaler.pkl', 'rb') as f:
         scaler = pickle.load(f)

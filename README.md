@@ -1,15 +1,19 @@
-# EEN210 
-When wearing the device always keep port side right and it is worn around the hips on the front of the patient.
+# Using device
+When wearing the device always keep port side right and it is worn around the hips on the front of the user.
 
-# Labels for datasets used in SVM
+# Using software
+Carefull using virtual environments as it is not always compatible with tensorflow instead use global version of python 3.10 for greatest compatability with tensorflow
+
+# Training data lables and their meaning
 0. Miscilanious
 1. Backpack drop
 2. Sitting up and down
 3. Walking
 4. Stairs
+5. Standing idle
 
 # legacy notes from initial pull of project files
-# To run the code
+To run the code
 1. Run the following lines to download required packages:
     python -m venv .venv
     source .venv/bin/activate
