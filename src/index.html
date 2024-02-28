@@ -22,6 +22,8 @@
     <button id="openButton">Open Connection</button>
     <ul id="messages">
     </ul>
+    <ul id="warning">
+    </ul>
     <script>
         // Change Ip address based on your current wifi ip address
         var ws = new WebSocket("ws://192.168.214.4:8000/ws");
@@ -30,9 +32,23 @@
         };
         ws.onmessage = function (event) {
             console.log("Received data:", event.data);
+
             var messages = document.getElementById('messages');
             var message = document.createElement('li');
-            var content = document.createTextNode(event.data);
+            if (event.data.includes("patientinfo")) {
+                const javaobject = json.parse(event.data);
+                var sensdata = javaobject.sensordata;
+                const patinf = javaobject.patientinfo;
+
+                var warning = document.getElementById('warning');
+                var war = document.createElement('li')
+                var pi = document.createTextNode('sus')
+                
+                
+            }
+
+
+            var content = document.createTextNode(sensdata);
             message.appendChild(content);
 
             // Append the new li element to the ul element
