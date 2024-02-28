@@ -33,22 +33,26 @@
         ws.onmessage = function (event) {
             console.log("Received data:", event.data);
 
-            var messages = document.getElementById('messages');
-            var message = document.createElement('li');
             if (event.data.includes("patientinfo")) {
-                const javaobject = json.parse(event.data);
-                var sensdata = javaobject.sensordata;
-                const patinf = javaobject.patientinfo;
+                var javaobject = JSON.parse(event.data);
+                var patinf = javaobject.patientinfo;
 
                 var warning = document.getElementById('warning');
-                var war = document.createElement('li')
-                var pi = document.createTextNode('sus')
+                var war = document.createElement('li');
+                var pi = '<p>Patient Name: ' + patinf.name + '<p>';
+                pi += '<p>Patient Adress: ' + patinf.adress + '<p>';
+                pi += '<p>Patient Phonenumber: ' + patinf.phonenumber + '<p>'
+                pi += '<p>Patients medical conditions: ' + patinf.conditions + '<p>'
+                pi += '<p>Patients active medications: ' + patinf.medication + '<p>'
                 
+                var patientcontent = document.createTextNode(pi)
+                war.append(patientcontent)
+                warning.appendChild(war)
                 
-            }
-
-
-            var content = document.createTextNode(sensdata);
+            } else {
+            var messages = document.getElementById('messages');
+            var message = document.createElement('li');
+            var content = document.createTextNode(event.data);
             message.appendChild(content);
 
             // Append the new li element to the ul element
@@ -56,6 +60,8 @@
 
             // Scroll to the bottom
             messages.scrollTop = messages.scrollHeight;
+            }
+
         };
 
         close = function () {
