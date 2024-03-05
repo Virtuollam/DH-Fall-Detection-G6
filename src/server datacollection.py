@@ -48,8 +48,8 @@ class DataProcessor:
             self.scaler = pickle.load(f)
 
     def add_data(self, data):
-        # Ensure the buffer doesn't exceed desired elements
-        if len(self.df) >= 60:
+        # Ensure the buffer doesn't exceed 20 elements
+        if len(self.df) >= 20:
             #self.data_buffer.pop(0)
             self.df = self.df.iloc[1:]  # Remove the oldest element
         #self.data_buffer.append(data)

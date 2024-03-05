@@ -33,28 +33,20 @@ with open("./src/index.html", "r") as f:
 
 class DataProcessor:
     def __init__(self):
-        # Specify the column labels
-        columns = ['acceleration_x', 'acceleration_y', 'acceleration_z', 
-           'gyroscope_x', 'gyroscope_y', 'gyroscope_z']
-
-        # Initialize an empty DataFrame with these column labels
-        self.df = pd.DataFrame(columns=columns)
         self.data_buffer = []
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        #timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:19] # new time stamp to include mili sec wait probly not needed since this is just the file name
         self.file_path = f"fall_data_{timestamp}.csv"
         #self.scaler = StandardScaler()
         with open('Model detection/scaler.pkl', 'rb') as f:
             self.scaler = pickle.load(f)
 
     def add_data(self, data):
-        # Ensure the buffer doesn't exceed desired elements
-        if len(self.df) >= 60:
-            #self.data_buffer.pop(0)
-            self.df = self.df.iloc[1:]  # Remove the oldest element
-        #self.data_buffer.append(data)
-        new_row = pd.DataFrame([data])
-        self.df = pd.concat([self.df, new_row], ignore_index=True)
+        # Ensure the buffer doesn't exceed 20 elements
+        if len(self.data_buffer) >= 20:
+            self.data_buffer.pop(0)  # Remove the oldest element
+        self.data_buffer.append(data)
 
     def prepare_data_for_lstm(self):
         if len(self.data_buffer) == 0:
@@ -96,13 +88,10 @@ data_processor = DataProcessor()
 def load_model_LSTM():
     # Load the trained LSTM model
     model = load_model('Model detection/LSTM_model.keras')
-    # Load the scaler
-    with open('Model detection/scaler.pkl', 'rb') as f:
-        scaler = pickle.load(f)
     # Load the encoder
     with open('Model detection/encoder.pkl', 'rb') as f:
         encoder = pickle.load(f)
-    return model, scaler, encoder
+    return model, encoder
 
 
 
@@ -112,13 +101,11 @@ def predict_label(model, encoder, data):
 
     #df = pd.DataFrame([data])
     # Preprocess data
-    scaled_data = scaler.transform(data)
-    print(scaled_data)
-    reshaped_data = np.reshape(scaled_data, (-1, 1, 6))  # Reshape for LSTM input
-    print(reshaped_data)
+    #scaled_data = scaler.transform(df)
+    #reshaped_data = np.reshape(scaled_data, (1, 1, scaled_data.shape[1]))  # Reshape for LSTM input TODO:sdasd
     # Predict
-    prediction = model.predict(reshaped_data)
-    # prediction = model.predict(data)
+    # prediction = model.predict(reshaped_data)
+    prediction = model.predict(data)
     predicted_label_index = np.argmax(prediction, axis=1)
     # Decode prediction
     predicted_label = encoder.inverse_transform(predicted_label_index)
@@ -181,26 +168,16 @@ async def websocket_endpoint(websocket: WebSocket):
             #print(data_processor.data_buffer)
 
             #call compliance enforcer for data bundle
-            # LSTM_bundle = data_processor.prepare_data_for_lstm()
-            scaled_data = scaler.transform(data_processor.df)
-            #print(scaled_data)
-            reshaped_data = np.reshape(scaled_data, (-1, 1, 6))  # Reshape for LSTM input
-            #print(reshaped_data)
+            LSTM_bundle = data_processor.prepare_data_for_lstm()
 
-            prediction = model.predict(reshaped_data)
-            predicted_label_index = np.argmax(prediction, axis=1)
-            predicted_label = encoder.inverse_transform(predicted_label_index)
-            print(predicted_label)
 
             #print(data_processor.data_buffer)
-            #print(LSTM_bundle)
-            #print(data_processor.df)
-            #print(json_data)
+            print(LSTM_bundle)
+            print(json_data)
 
-            #label = predict_label(model, scaler, encoder, json_data)
-            #label = predict_label(model, scaler, encoder, data_processor.df)
+            label = predict_label(model, scaler, encoder, json_data)
             #label = predict_label(model, scaler, encoder, data_processor.data_buffer)
-            #print(label)
+            print(label)
             #json_data["label"] = label
 
 

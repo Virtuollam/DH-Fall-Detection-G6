@@ -1,0 +1,31 @@
+"""            
+data = await websocket.receive_text()
+
+            # Broadcast the incoming data to all connected clients
+            json_data = json.loads(data)
+
+            # use raw_data for prediction
+            raw_data = list(json_data.values())
+
+            # Add time stamp to the last received data
+            json_data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:23]
+
+            data_processor.add_data(json_data)
+            # this line save the recent 100 samples to the CSV file. you can change 100 if you want.
+            #if len(data_processor.data_buffer) >= 20: #saves more often originally 100
+                #data_processor.save_to_csv()
+            
+            #print(raw_data)
+"""
+
+
+def load_model_LSTM():
+    # Load the trained LSTM model
+    model = load_model('Model detection/LSTM_model.keras')
+    # Load the scaler
+    with open('Model detection/scaler.pkl', 'rb') as f:
+        scaler = pickle.load(f)
+    # Load the encoder
+    with open('Model detection/encoder.pkl', 'rb') as f:
+        encoder = pickle.load(f)
+    return model, scaler, encoder

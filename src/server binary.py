@@ -39,55 +39,20 @@ class DataProcessor:
 
         # Initialize an empty DataFrame with these column labels
         self.df = pd.DataFrame(columns=columns)
+        self.df = pd.DataFrame(0, index=range(60), columns=columns)
         self.data_buffer = []
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.file_path = f"fall_data_{timestamp}.csv"
-        #self.scaler = StandardScaler()
-        with open('Model detection/scaler.pkl', 'rb') as f:
-            self.scaler = pickle.load(f)
 
     def add_data(self, data):
         # Ensure the buffer doesn't exceed desired elements
         if len(self.df) >= 60:
-            #self.data_buffer.pop(0)
             self.df = self.df.iloc[1:]  # Remove the oldest element
-        #self.data_buffer.append(data)
         new_row = pd.DataFrame([data])
         self.df = pd.concat([self.df, new_row], ignore_index=True)
 
-    def prepare_data_for_lstm(self):
-        if len(self.data_buffer) == 0:
-            print("Data buffer is empty. No data to prepare.")
-            return np.empty((0, 1, 0))
 
-        # Convert list of dictionaries to a 2D numpy array
-        features = ['acceleration_x', 'acceleration_y', 'acceleration_z', 'gyroscope_x', 'gyroscope_y', 'gyroscope_z']
-        data_2d = np.array([[observation[feature] for feature in features] for observation in self.data_buffer])
-
-        # Ensure the data is 2D before scaling
-        if data_2d.ndim != 2:
-            print("Error: Data is not 2-dimensional.")
-            return None
-
-        # Scale the 2D data
-        data_scaled = self.scaler.fit_transform(data_2d)  # Use fit_transform or transform as appropriate
-
-        # Reshape for LSTM input: (samples, time steps, features)
-        lstm_compliant_data = data_scaled.reshape(-1, 1, len(features))
-        return lstm_compliant_data
-
-    def save_to_csv(self):
-        df = pd.DataFrame.from_dict(self.data_buffer)
-        self.data_buffer = []
-        # Append the new row to the existing DataFrame
-        df.to_csv(
-            self.file_path,
-            index=False,
-            mode="a",
-            header=not os.path.exists(self.file_path),
-        )
-        # print(f"DataFrame saved to {self.file_path}")
 
 
 data_processor = DataProcessor()
@@ -95,7 +60,7 @@ data_processor = DataProcessor()
 
 def load_model_LSTM():
     # Load the trained LSTM model
-    model = load_model('Model detection/LSTM_model.keras')
+    model = load_model('Model detection/LSTM_model_binary.keras')
     # Load the scaler
     with open('Model detection/scaler.pkl', 'rb') as f:
         scaler = pickle.load(f)
@@ -177,41 +142,13 @@ async def websocket_endpoint(websocket: WebSocket):
             data_processor.add_data(json_data)
             # this line save the recent 100 samples to the CSV file. you can change 100 if you want.
             # if len(data_processor.data_buffer) >= 20: #saves more often originally 100
-            #    data_processor 
-            #print(data_processor.data_buffer)
-
-            #call compliance enforcer for data bundle
-            # LSTM_bundle = data_processor.prepare_data_for_lstm()
             scaled_data = scaler.transform(data_processor.df)
-            #print(scaled_data)
-            reshaped_data = np.reshape(scaled_data, (-1, 1, 6))  # Reshape for LSTM input
-            #print(reshaped_data)
+            reshaped_data = np.reshape(scaled_data, (-1, 60, 6))  # Reshape for LSTM input
+
 
             prediction = model.predict(reshaped_data)
-            predicted_label_index = np.argmax(prediction, axis=1)
-            predicted_label = encoder.inverse_transform(predicted_label_index)
-            print(predicted_label)
+            print(prediction)
 
-            #print(data_processor.data_buffer)
-            #print(LSTM_bundle)
-            #print(data_processor.df)
-            #print(json_data)
-
-            #label = predict_label(model, scaler, encoder, json_data)
-            #label = predict_label(model, scaler, encoder, data_processor.df)
-            #label = predict_label(model, scaler, encoder, data_processor.data_buffer)
-            #print(label)
-            #json_data["label"] = label
-
-
-            #print(json_data)
-            #print(raw_data)
-            #print(json_data)
-
-            #if label == 1: #simple check to test fall detection
-            #    break
-            
-            # broadcast the last data to webpage
 
             await websocket_manager.broadcast_message(json.dumps(json_data))
             
