@@ -208,8 +208,9 @@ async def websocket_endpoint(websocket: WebSocket):
             #print(raw_data)
             #print(json_data)
 
-            #if label == 1: #simple check to test fall detection
-            #    break
+            if label == 1: #simple check to test fall detection
+                await websocket_manager.broadcast_message(json.dumps(getpatientdata()))
+                break
             
             # broadcast the last data to webpage
 
@@ -230,7 +231,7 @@ def getpatientdata():
     patientname = patient["name"][0]["given"][0] + " " + patient["name"][0]["family"]
     patientphone = patient["telecom"][0]["value"]
     patientadress = patient["address"][0]["line"][0] + ", " + patient["address"][0]["city"] + " " + patient["address"][0]["state"]
-    patientinfo = {"id": patientid, "name": patientname, "phonenumber": patientphone, "adress": patientadress}
+    patientinfo = {"name": patientname, "phonenumber": patientphone, "adress": patientadress}
 
     condcon = requests.get('https://fhirsandbox.healthit.gov/open/r4/fhir/Condition?_format=json')
     patientconds = condcon.json()["entry"]

@@ -22,6 +22,8 @@
     <button id="openButton">Open Connection</button>
     <ul id="messages">
     </ul>
+    <ul id="warning">
+    </ul>
     <script>
         // Change Ip address based on your current wifi ip address
         var ws = new WebSocket("ws://192.168.214.4:8000/ws");
@@ -30,6 +32,24 @@
         };
         ws.onmessage = function (event) {
             console.log("Received data:", event.data);
+
+            if (event.data.includes("patientinfo")) {
+                var javaobject = JSON.parse(event.data);
+                var patinf = javaobject.patientinfo;
+
+                var warning = document.getElementById('warning');
+                var war = document.createElement('li');
+                var pi = '<p>Patient Name: ' + patinf.name + '<p>';
+                pi += '<p>Patient Adress: ' + patinf.adress + '<p>';
+                pi += '<p>Patient Phonenumber: ' + patinf.phonenumber + '<p>'
+                pi += '<p>Patients medical conditions: ' + patinf.conditions + '<p>'
+                pi += '<p>Patients active medications: ' + patinf.medication + '<p>'
+                
+                var patientcontent = document.createTextNode(pi)
+                war.append(patientcontent)
+                warning.appendChild(war)
+                
+            } else {
             var messages = document.getElementById('messages');
             var message = document.createElement('li');
             var content = document.createTextNode(event.data);
@@ -40,6 +60,8 @@
 
             // Scroll to the bottom
             messages.scrollTop = messages.scrollHeight;
+            }
+
         };
 
         close = function () {
