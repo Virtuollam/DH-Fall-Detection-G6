@@ -174,7 +174,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # use raw_data for prediction
             # raw_data = list(json_data.values())
 
-            data_processor.add_data(json_data)
+            #data_processor.add_data(json_data)
             # this line save the recent 100 samples to the CSV file. you can change 100 if you want.
             # if len(data_processor.data_buffer) >= 20: #saves more often originally 100
             #    data_processor 
@@ -182,15 +182,15 @@ async def websocket_endpoint(websocket: WebSocket):
 
             #call compliance enforcer for data bundle
             # LSTM_bundle = data_processor.prepare_data_for_lstm()
-            scaled_data = scaler.transform(data_processor.df)
+            #scaled_data = scaler.transform(data_processor.df)
             #print(scaled_data)
-            reshaped_data = np.reshape(scaled_data, (-1, 1, 6))  # Reshape for LSTM input
+            #reshaped_data = np.reshape(scaled_data, (-1, 1, 6))  # Reshape for LSTM input
             #print(reshaped_data)
 
-            prediction = model.predict(reshaped_data)
-            predicted_label_index = np.argmax(prediction, axis=1)
-            predicted_label = encoder.inverse_transform(predicted_label_index)
-            print(predicted_label)
+            #prediction = model.predict(reshaped_data)
+            #predicted_label_index = np.argmax(prediction, axis=1)
+            #predicted_label = encoder.inverse_transform(predicted_label_index)
+            #print(predicted_label)
 
             #print(data_processor.data_buffer)
             #print(LSTM_bundle)
@@ -208,12 +208,12 @@ async def websocket_endpoint(websocket: WebSocket):
             #print(raw_data)
             #print(json_data)
 
-            if label == 1: #simple check to test fall detection
-                await websocket_manager.broadcast_message(json.dumps(getpatientdata()))
-                break
+            #if label == 1: #simple check to test fall detection
+                #await websocket_manager.broadcast_message(json.dumps(getpatientdata()))
+                #break
             
             # broadcast the last data to webpage
-
+            print(json_data)
             await websocket_manager.broadcast_message(json.dumps(json_data))
             
 

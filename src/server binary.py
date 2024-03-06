@@ -42,9 +42,6 @@ class DataProcessor:
         self.df = pd.DataFrame(0, index=range(60), columns=columns)
         self.data_buffer = []
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.file_path = f"fall_data_{timestamp}.csv"
-
     def add_data(self, data):
         # Ensure the buffer doesn't exceed desired elements
         if len(self.df) >= 60:
@@ -73,9 +70,6 @@ def load_model_LSTM():
 
 def predict_label(model, encoder, data):
 
-    #features = {key: data[key] for key in data.keys() - {'timestamp', 'label'}} #maybe fix for error
-
-    #df = pd.DataFrame([data])
     # Preprocess data
     scaled_data = scaler.transform(data)
     print(scaled_data)
@@ -140,14 +134,18 @@ async def websocket_endpoint(websocket: WebSocket):
             # raw_data = list(json_data.values())
 
             data_processor.add_data(json_data)
-            # this line save the recent 100 samples to the CSV file. you can change 100 if you want.
-            # if len(data_processor.data_buffer) >= 20: #saves more often originally 100
+
             scaled_data = scaler.transform(data_processor.df)
             reshaped_data = np.reshape(scaled_data, (-1, 60, 6))  # Reshape for LSTM input
 
 
             prediction = model.predict(reshaped_data)
             print(prediction)
+
+            if prediction > 0.9: #simple check to test fall detection
+                patientinfo = getpatientdata()
+                await websocket_manager.broadcast_message(json.dumps(patientinfo))
+                break
 
 
             await websocket_manager.broadcast_message(json.dumps(json_data))

@@ -11,7 +11,7 @@
         }
         #warning {
             height: 90vh;     
-            width: 40vw
+            width: 40vw;
         }
     </style>
 </head>
@@ -26,7 +26,7 @@
     </ul>
     <script>
         // Change Ip address based on your current wifi ip address
-        var ws = new WebSocket("ws://192.168.214.4:8000/ws");
+        var ws = new WebSocket("ws://192.168.25.139:8000/ws");
         ws.onopen = function (event) {
             console.log("WebSocket state:", ws.readyState);  // This will log "OPEN"
         };
@@ -35,19 +35,19 @@
 
             if (event.data.includes("patientinfo")) {
                 var javaobject = JSON.parse(event.data);
-                var patinf = javaobject.patientinfo;
+                // var patinf = javaobject.patientinfo;
 
                 var warning = document.getElementById('warning');
                 var war = document.createElement('li');
-                var pi = '<p>Patient Name: ' + patinf.name + '<p>';
-                pi += '<p>Patient Adress: ' + patinf.adress + '<p>';
-                pi += '<p>Patient Phonenumber: ' + patinf.phonenumber + '<p>'
-                pi += '<p>Patients medical conditions: ' + patinf.conditions + '<p>'
-                pi += '<p>Patients active medications: ' + patinf.medication + '<p>'
+                var pi = '<p>Patient Name: ' + javaobject.patientinfo.name + '<p>';
+                pi += '<p>Patient Adress: ' + javaobject.patientinfo.adress + '<p>';
+                pi += '<p>Patient Phonenumber: ' + javaobject.patientinfo.phonenumber + '<p>';
+                pi += '<p>Patients medical conditions: ' + javaobject.patientinfo.conditions + '<p>';
+                pi += '<p>Patients active medications: ' + javaobject.patientinfo.medication + '<p>';
                 
-                var patientcontent = document.createTextNode(pi)
-                war.append(patientcontent)
-                warning.appendChild(war)
+                var patientcontent = document.createTextNode(pi);
+                war.append(patientcontent);
+                warning.appendChild(war);
                 
             } else {
             var messages = document.getElementById('messages');
@@ -57,6 +57,10 @@
 
             // Append the new li element to the ul element
             messages.appendChild(message);
+            var listLength = document.querySelectorAll('#messages li').length;
+            if (listLength > 50) {
+                messages.removeChild(messages.firstElementChild);
+            }
 
             // Scroll to the bottom
             messages.scrollTop = messages.scrollHeight;
@@ -70,7 +74,7 @@
         };
 
         open = function () {
-            ws = new WebSocket("ws://192.168.214.4:8000/ws");;
+            ws = new WebSocket("ws://192.168.25.139:8000/ws");;
             console.log("WebSocket state:", ws.readyState);
         }
 
