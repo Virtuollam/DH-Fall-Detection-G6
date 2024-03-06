@@ -33,9 +33,8 @@
         ws.onmessage = function (event) {
             console.log("Received data:", event.data);
 
-            if (event.data.includes("patientinfo")) {
-                var javaobject = JSON.parse(event.data);
-                var patinf = javaobject.patientinfo;
+            if (event.data.includes("name")) {
+                var patinf = JSON.parse(event.data);
 
                 var warning = document.getElementById('warning');
                 var war = document.createElement('li');
