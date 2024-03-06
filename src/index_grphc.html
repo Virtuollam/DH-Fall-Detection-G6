@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fall Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Add some CSS for styling the scrollable area and charts */
+        #messages, #warning, #charts {
+            display: inline-block;
+            vertical-align: top;
+        }
+        #messages, #warning {
+            width: 45%;
+        }
+        #messages {
+            overflow-y: scroll;
+            height: 45vh;
+        }
+        #charts {
+            width: 50%;
+        }
+        canvas {
+            padding: 10px;
+            width: 100% !important;
+            height: auto !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fall Detection Device Portal</h1>
+    <div id="warning" style="list-style-type: none;">
+        <button id="closeButton">Call Patient</button>
+    </div>
+    <ul id="messages" style="list-style-type: none;">
+    </ul>
+    <div id="charts">
+        <canvas id="accelerationChart"></canvas>
+        <canvas id="gyroscopeChart"></canvas>
+    </div>
+    <script>
+        var ws = new WebSocket("ws://192.168.25.139:8000/ws");
+        ws.onopen = function(event) {
+            console.log("WebSocket state:", ws.readyState);  // This will log "OPEN"
+        };
+
+        // Initialize the charts
+        var accelerationChartData = {
+            labels: [],
+            datasets: [{
+                label: 'Acceleration X',
+                borderColor: 'rgb(255, 99, 132)',
+                data: [],
+            }, {
+                label: 'Acceleration Y',
+                borderColor: 'rgb(54, 162, 235)',
+                data: [],
+            }, {
+                label: 'Acceleration Z',
+                borderColor: 'rgb(75, 192, 192)',
+                data: [],
+            }]
+        };
+
+        var gyroscopeChartData = {
+            labels: [],
+            datasets: [{
+                label: 'Gyroscope X',
+                borderColor: 'rgb(255, 205, 86)',
+                data: [],
+            }, {
+                label: 'Gyroscope Y',
+                borderColor: 'rgb(201, 203, 207)',
+                data: [],
+            }, {
+                label: 'Gyroscope Z',
+                borderColor: 'rgb(153, 102, 255)',
+                data: [],
+            }]
+        };
+
+        var accelerationCtx = document.getElementById('accelerationChart').getContext('2d');
+        var gyroscopeCtx = document.getElementById('gyroscopeChart').getContext('2d');
+
+        var accelerationChart = new Chart(accelerationCtx, {
+            type: 'line',
+            data: accelerationChartData,
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        var gyroscopeChart = new Chart(gyroscopeCtx, {
+            type: 'line',
+            data: gyroscopeChartData,
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        ws.onmessage = function(event) {
+            console.log("Received data:", event.data);
+            
+            if (event.data.includes("name")) {
+                var patinf = JSON.parse(event.data);
+                var warning = document.getElementById('warning');
+                var patientInfoHtml = `<div class="patient-info">
+                    <h2>!!!PATIENT FALL DETECTED!!!</h2>
+                    <h3>Patient Name: ${patinf.name}</h3>
+                    <ul>
+                        <li>Address: ${patinf.address}</li>
+                        <li>Phone Number: ${patinf.phonenumber}</li>
+                        <li>Medical Conditions: ${patinf.conditions.join(', ')}</li>
+                        <li>Active Medications: ${patinf.medications.join(', ')}</li>
+                    </ul>
+                </div>`;
+                warning.innerHTML += patientInfoHtml;
+            } else {
+                var data = JSON.parse(event.data);
+                if(data.acceleration_x !== undefined) { // Ensure it's sensor data
+                    updateCharts(data);
+                } else {
+                    var messages = document.getElementById('messages');
+                    var message = document.createElement('li');
+                    var content = document.createTextNode(event.data);
+                    message.appendChild(content);
+                    messages.appendChild(message);
+                    if (messages.children.length > 50) {
+                        messages.removeChild(messages.firstChild);
+                    }
+                    messages.scrollTop = messages.scrollHeight;
+                }
+            }
+        };
+
+        // Function to update charts with new data
+        function updateCharts(data) {
+            var counter = data.counter;
+            if (accelerationChart.data.labels.length >= 20) {
+                accelerationChart.data.labels.shift();
+                accelerationChart.data.datasets.forEach(dataset => dataset.data.shift());
+                gyroscopeChart.data.labels.shift();
+                gyroscopeChart.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+            
+            accelerationChart.data.labels.push(counter);
+            accelerationChart.data.datasets[0].data.push(data.acceleration_x);
+            accelerationChart.data.datasets[1].data.push(data.acceleration_y);
+            accelerationChart.data.datasets[2].data.push(data.acceleration_z);
+
+            gyroscopeChart.data.labels.push(counter);
+            gyroscopeChart.data.datasets[0].data.push(data.gyroscope_x);
+            gyroscopeChart.data.datasets[1].data.push(data.gyroscope_y);
+            gyroscopeChart.data.datasets[2].data.push(data.gyroscope_z);
+
+            accelerationChart.update();
+            gyroscopeChart.update();
+        }
+
+        ws.onclose = function(event) {
+            console.log("WebSocket closed:", event);
+        };
+
+        var closeButton = document.getElementById('closeButton');
+        closeButton.addEventListener('click', function() {
+            ws.close();
+            console.log("Connection Closed");
+        });
+    </script>
+</body>
+</html>

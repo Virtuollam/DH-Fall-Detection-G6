@@ -27,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-with open("./src/index.html", "r") as f:
+with open("./src/index_grphc.html", "r") as f:
     html = f.read()
 
 
@@ -120,10 +120,12 @@ async def get():
 
 
 async def websocket_endpoint(websocket: WebSocket):
-
+    counter = 0
+    fall_detected = False
     await websocket_manager.connect(websocket)
     try:
         while True:
+            counter += 1
             #recieve line of data
             data = await websocket.receive_text()
 
@@ -142,12 +144,14 @@ async def websocket_endpoint(websocket: WebSocket):
             prediction = model.predict(reshaped_data)
             print(prediction)
 
-            if prediction > 0.9: #simple check to test fall detection
+            if prediction > 0.9 and fall_detected == False: #simple check to test fall detection
                 patientinfo = getpatientdata()
                 await websocket_manager.broadcast_message(json.dumps(patientinfo))
-                break
-
-
+                fall_detected = True
+                #await websocket.close()
+                #break
+            print(counter)
+            json_data["counter"] = counter
             await websocket_manager.broadcast_message(json.dumps(json_data))
             
 

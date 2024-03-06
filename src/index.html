@@ -4,25 +4,24 @@
         /* Add some CSS for styling the scrollable area */
         #messages {
             overflow-y: scroll;
-            height: 90vh;
+            height: 45vh;
             /* Limit the height of the scrollable area */
-            width: 60vw;
+            width: 80vw;
             /* Limit the height of the scrollable area */
         }
         #warning {
-            height: 90vh;     
-            width: 40vw;
+            height: 45vh;     
+            width: 60vw;
         }
     </style>
 </head>
 
 <body>
-    <h1>Real-time data collection</h1>
-    <button id="closeButton">Close Connection</button>
-    <button id="openButton">Open Connection</button>
-    <ul id="messages">
+    <h1>Fall Detection Device Portal</h1>
+    <ul id="warning" style="list-style-type: none; display: inline-block;">
+    <button id="closeButton">Call Patient</button>
     </ul>
-    <ul id="warning">
+    <ul id="messages" style="list-style-type: none; display: inline-block;">
     </ul>
     <script>
         // Change Ip address based on your current wifi ip address
@@ -37,22 +36,26 @@
                 var patinf = JSON.parse(event.data);
 
                 var warning = document.getElementById('warning');
-                var war = document.createElement('li');
-                var pi = '<p>Patient Name: ' + javaobject.patientinfo.name + '<p>';
-                pi += '<p>Patient Adress: ' + javaobject.patientinfo.adress + '<p>';
-                pi += '<p>Patient Phonenumber: ' + javaobject.patientinfo.phonenumber + '<p>';
-                pi += '<p>Patients medical conditions: ' + javaobject.patientinfo.conditions + '<p>';
-                pi += '<p>Patients active medications: ' + javaobject.patientinfo.medication + '<p>';
-                
-                var patientcontent = document.createTextNode(pi);
-                war.append(patientcontent);
-                warning.appendChild(war);
-                
+                var patientInfoHtml = `<div class="patient-info">
+                    <h1>!!!PATIENT FALL DETECTED!!!<h2>
+                    <h2>Patient Name: ${patinf.name}</h2>
+                    <ul>
+                        <li>Address: ${patinf.adress}</li>
+                        <li>Phone Number: ${patinf.phonenumber}</li>
+                        <li>Medical Conditions: ${patinf.conditions.join(', ')}</li>
+                        <li>Active Medications: ${patinf.medications.join(', ')}</li>
+                    </ul>
+                </div>`;
+
+                warning.innerHTML += patientInfoHtml;
             } else {
-            var messages = document.getElementById('messages');
-            var message = document.createElement('li');
-            var content = document.createTextNode(event.data);
-            message.appendChild(content);
+                var messages = document.getElementById('messages');
+                var message = document.createElement('li');
+                var content = document.createTextNode(event.data);
+                message.appendChild(content);
+
+               
+
 
             // Append the new li element to the ul element
             messages.appendChild(message);
