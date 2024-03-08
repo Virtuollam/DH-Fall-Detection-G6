@@ -27,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-with open("./src/index_grphc.html", "r") as f:
+with open("./src/index.html", "r") as f:
     html = f.read()
 
 
