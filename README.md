@@ -1,22 +1,14 @@
+# Fall Detection Device - Group 6
+In this github is the code that was used when developing a fall detection device. An image of the device can be seen as Device im.jpg
+The device uses LSTM to detect whether a fall has occured or not and displays it on a website with a plotted live feed of the device data.
+
 # Using device
-When wearing the device always keep port side right and it is worn around the hips on the front of the user.
+When wearing the device always keep port side right and it is worn around the hips on the front of the user for consistent results.
+Carefull using virtual environments as it is not always compatible with tensorflow instead use global version of python 3.10 for greatest compatability with tensorflow.
+Check that correct ip is inputted in the main.cpp and index_grphc.html file. 
+Run server binary.py and open website
 
-# Using software
-Carefull using virtual environments as it is not always compatible with tensorflow instead use global version of python 3.10 for greatest compatability with tensorflow
-
-# Training data lables and their meaning
-0. Miscilanious
-1. Backpack drop
-2. Sitting up and down
-3. Walking
-4. Stairs
-5. Standing idle
-
-# legacy notes from initial pull of project files
-To run the code
-1. Run the following lines to download required packages:
-    python -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
-2. You need to change "Your_IP_Address" in index.html file;
-3. You need to also add "your WiFi SSID", "your Passoword" and "your WiFi IP Address" in main.cpp if you want to programm the micro controler.
+# Other notable folders and files
+Data analysis and testing contains files used for data analysis and testing, it also has the data labeler where you can display data and label easily.
+Legacy contains files that are no longer used or of any intresting
+Model detection contains the model training files and the model itself

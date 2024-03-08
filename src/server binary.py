@@ -42,11 +42,12 @@ class DataProcessor:
         self.df = pd.DataFrame(0, index=range(60), columns=columns)
         self.data_buffer = []
 
+    #function to add data to rolling window bundle to be fed into model
     def add_data(self, data):
-        # Ensure the buffer doesn't exceed desired elements
+        # Ensure the bundle doesn't exceed desired size
         if len(self.df) >= 60:
             self.df = self.df.iloc[1:]  # Remove the oldest element
-        new_row = pd.DataFrame([data])
+        new_row = pd.DataFrame([data]) # format and add newest one
         self.df = pd.concat([self.df, new_row], ignore_index=True)
 
 
@@ -66,7 +67,7 @@ def load_model_LSTM():
         encoder = pickle.load(f)
     return model, scaler, encoder
 
-
+#in the end encoder was not used as we pivoted to a binary model and the predict_label function experienced complications so its just run directly in loop
 
 def predict_label(model, encoder, data):
 
@@ -132,26 +133,29 @@ async def websocket_endpoint(websocket: WebSocket):
             # Load data into JSON format
             json_data = json.loads(data)
 
-            # use raw_data for prediction
-            # raw_data = list(json_data.values())
-
+            #add data to bundle that is fed into model
             data_processor.add_data(json_data)
 
+            #scale and reshape data
             scaled_data = scaler.transform(data_processor.df)
             reshaped_data = np.reshape(scaled_data, (-1, 60, 6))  # Reshape for LSTM input
 
-
+            #feed scaled data into model to predict and print prediction for clarity on serverside and error managment
             prediction = model.predict(reshaped_data)
             print(prediction)
 
-            if prediction > 0.9 and fall_detected == False: #simple check to test fall detection
+            #if a fall has yet to occur and the model reaches a .9 certainty trigger it as being a fall
+            if prediction > 0.9 and fall_detected == False:
+                #here we get the patient infor and broadcast it and set the status that a fall has occured to true
                 patientinfo = getpatientdata()
                 await websocket_manager.broadcast_message(json.dumps(patientinfo))
                 fall_detected = True
-                #await websocket.close()
-                #break
+
+            #counter to help with tracking the process and plotting (should probly be replaced with timestamp)
             print(counter)
             json_data["counter"] = counter
+
+            #send raw data for plotting to website
             await websocket_manager.broadcast_message(json.dumps(json_data))
             
 
@@ -159,6 +163,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         websocket_manager.disconnect(websocket)
 
+#get patient data function to grab from FHIR
 def getpatientdata():
     sussy = requests.get('https://fhirsandbox.healthit.gov/open/r4/fhir/Patient?_format=json')
     jsus = sussy.json()

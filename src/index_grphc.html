@@ -4,7 +4,7 @@
     <title>Fall Detection</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Add some CSS for styling the scrollable area and charts */
+        
         #messages, #warning, #charts {
             display: inline-block;
             vertical-align: top;
@@ -38,7 +38,7 @@
         <canvas id="gyroscopeChart"></canvas>
     </div>
     <script>
-        var ws = new WebSocket("ws://192.168.25.139:8000/ws");
+        var ws = new WebSocket("ws://192.168.25.139:8000/ws"); // Rember to check ip
         ws.onopen = function(event) {
             console.log("WebSocket state:", ws.readyState);  // This will log "OPEN"
         };
@@ -110,6 +110,7 @@
         ws.onmessage = function(event) {
             console.log("Received data:", event.data);
             
+            // when fall detected do the following
             if (event.data.includes("name")) {
                 var patinf = JSON.parse(event.data);
                 var warning = document.getElementById('warning');
